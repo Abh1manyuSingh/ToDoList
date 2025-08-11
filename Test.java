@@ -1,54 +1,105 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Runs basic tests for the application.
- */
 public class Test {
 
-    /**
-     * Runs all tests and saves results to file.
-     */
-    public void testAll() {
-        StringBuilder results = new StringBuilder();
-        results.append(testTaskCreation());
-        results.append(testAddTaskToList());
-        results.append(testFindTask());
-        results.append(testMarkDone());
+    ToDoList list = new ToDoList("TestTopic");
 
-        // Write to file
-        try (FileWriter fw = new FileWriter("testsResults.txt")) {
-            fw.write(results.toString());
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.testAll();
+    }
+
+    private void testCreateTask() {
+        int before = list.tasks.size();
+        Task t = new Task();
+        t.setName("Task1");
+        t.setEmployee("John");
+        t.setDeadLine(new Date());
+        list.tasks.add(t);
+        if (list.tasks.size() == before + 1) {
+            log("Create Task test passed");
+        } else {
+            log("Create Task test failed");
+        }
+    }
+
+    private void testAssignTask() {
+        list.assignTask("Task1", "Mike");
+        if ("Mike".equals(list.tasks.get(0).getEmployee())) {
+            log("Assign Task test passed");
+        } else {
+            log("Assign Task test failed");
+        }
+    }
+
+    private void testAssignDeadLine() {
+        Date d = new Date();
+        list.assignDeadLine("Task1", d);
+        if (d.equals(list.tasks.get(0).getDeadLine())) {
+            log("Assign Deadline test passed");
+        } else {
+            log("Assign Deadline test failed");
+        }
+    }
+
+    private void testMarkAsDone() {
+        list.markAsDone("Task1");
+        if (list.tasks.get(0).isDone()) {
+            log("Mark As Done test passed");
+        } else {
+            log("Mark As Done test failed");
+        }
+    }
+
+    private void testRemoveTask() {
+        list.removeTask("Task1");
+        if (list.tasks.isEmpty()) {
+            log("Remove Task test passed");
+        } else {
+            log("Remove Task test failed");
+        }
+    }
+
+    private void testRenameTask() {
+        Task t = new Task();
+        t.setName("OldName");
+        list.tasks.add(t);
+        list.renameTask("OldName", "NewName");
+        if ("NewName".equals(list.tasks.get(0).getName())) {
+            log("Rename Task test passed");
+        } else {
+            log("Rename Task test failed");
+        }
+    }
+
+    public void testAll() {
+        try {
+            writer = new FileWriter("testsResults.txt");
+            testCreateTask();
+            testAssignTask();
+            testAssignDeadLine();
+            testMarkAsDone();
+            testRemoveTask();
+            testRenameTask();
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // Print to screen
-        System.out.println(results);
     }
 
-    private String testTaskCreation() {
-        Task t = new Task("Test");
-        return t.getName().equals("Test") ? "Task creation test passed\n" : "Task creation test failed\n";
-    }
+    private static FileWriter writer;
 
-    private String testAddTaskToList() {
-        ToDoList list = new ToDoList("Work");
-        boolean added = list.addTask(new Task("Email"));
-        return added ? "Add task test passed\n" : "Add task test failed\n";
-    }
-
-    private String testFindTask() {
-        ToDoList list = new ToDoList("Home");
-        Task t = new Task("Cook");
-        list.addTask(t);
-        return list.findTask("Cook") != null ? "Find task test passed\n" : "Find task test failed\n";
-    }
-
-    private String testMarkDone() {
-        Task t = new Task("Laundry");
-        t.markDone();
-        return t.isDone() ? "Mark done test passed\n" : "Mark done test failed\n";
+    private static void log(String message) {
+        System.out.println(message);
+        try {
+            if (writer != null) {
+                writer.write(message + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

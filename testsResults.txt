@@ -1,4 +1,6 @@
-Task creation test passed
-Add task test passed
-Find task test passed
-Mark done test passed
+Create Task test passed
+Assign Task test passed
+Assign Deadline test passed
+Mark As Done test passed
+Remove Task test passed
+Rename Task test passed

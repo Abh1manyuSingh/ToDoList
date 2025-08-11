@@ -1,70 +1,47 @@
 import java.util.Date;
 
-/**
- * Represents a task with a name, deadline, and assigned employee.
- */
 public class Task {
+
     private String name;
-    private Date deadline;
+    private Date deadLine;
     private String employee;
-    private boolean done;
+    private boolean isDone;
 
-    /**
-     * Creates a new Task.
-     * @param name the task name
-     */
-    public Task(String name) {
-        this.name = name;
-        this.deadline = null;
-        this.employee = null;
-        this.done = false;
-    }
-
-    /** @return the task name */
     public String getName() {
         return name;
     }
 
-    /** @param name the new task name */
     public void setName(String name) {
         this.name = name;
     }
 
-    /** @return the deadline */
-    public Date getDeadline() {
-        return deadline;
+    public Date getDeadLine() {
+        return deadLine;
     }
 
-    /** @param deadline the due date */
-    public void setDeadline(Date deadline) {
-        this.deadline = deadline;
+    public void setDeadLine(Date deadLine) {
+        this.deadLine = deadLine;
     }
 
-    /** @return the assigned employee */
     public String getEmployee() {
         return employee;
     }
 
-    /** @param employee the person assigned to the task */
     public void setEmployee(String employee) {
         this.employee = employee;
     }
 
-    /** Marks the task as done. */
-    public void markDone() {
-        this.done = true;
-    }
-
-    /** @return true if the task is completed */
-    public boolean isDone() {
-        return done;
-    }
-
-    /** Displays task details as a string. */
+    @Override
     public String toString() {
-        String deadlineStr = (deadline != null) ? deadline.toString() : "No deadline";
-        String employeeStr = (employee != null) ? employee : "Unassigned";
-        String statusStr = done ? "Done" : "Pending";
-        return name + " | " + deadlineStr + " | " + employeeStr + " | " + statusStr;
+        return "Task name = " + name + " , employee = " + employee + " , deadline = " + deadLine + ", Done = " + isDone;
     }
+
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public void setDone(boolean isDone) {
+        this.isDone = isDone;
+    }
+
 }

@@ -1,153 +1,146 @@
-import java.util.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
 
-/**
- * Menu for managing to-do lists and tasks.
- */
 public class Menu {
 
-    private List<ToDoList> lists = new ArrayList<>();
-    private Scanner scanner = new Scanner(System.in);
+    static List<ToDoList> topicTodoLIst = new ArrayList<>();
+    static ToDoList currentList;
 
     public static void main(String[] args) {
-        Test test = new Test();
-        test.testAll();
-
-        Menu menu = new Menu();
-        menu.run();
+        // Run tests first
+        new Test().testAll();
+        System.out.println("Press Enter to start menu...");
+        new Scanner(System.in).nextLine();
+        run();
     }
 
-    /** Runs the menu loop. */
-    public void run() {
-        while (true) {
-            System.out.println("\n--- TO-DO LIST MENU ---");
-            System.out.println("1. Create new to-do list");
-            System.out.println("2. Add task to list");
-            System.out.println("3. Edit task");
-            System.out.println("4. Mark task as done");
-            System.out.println("5. Display tasks");
-            System.out.println("0. Quit");
-            System.out.print("Choose: ");
-
-            String choice = scanner.nextLine();
+    private static void run() {
+        boolean quit = false;
+        String mainMenu = "" +
+                "1. Add a topic\n" +
+                "2. Select a topic\n" +
+                "3. Assign Task\n" +
+                "4. Assign deadline\n" +
+                "5. Create a task\n" +
+                "6. Mark as done\n" +
+                "7. Remove task\n" +
+                "8. Rename task\n" +
+                "9. Display\n" +
+                "10. Quit\n";
+        Scanner input = new Scanner(System.in);
+        while (!quit) {
+            System.out.println(mainMenu);
+            int choice = input.nextInt();
+            input.nextLine(); // consume newline
             switch (choice) {
-                case "1": createList(); break;
-                case "2": addTaskToList(); break;
-                case "3": editTask(); break;
-                case "4": markTaskDone(); break;
-                case "5": displayTasks(); break;
-                case "0": return;
-                default: System.out.println("Invalid option!");
+                case 1: addTopic(); break;
+                case 2: selectTopic(input); break;
+                case 3: assignTask(input); break;
+                case 4: assignDeadline(input); break;
+                case 5: if (currentList != null) currentList.createTask(); break;
+                case 6: markAsDone(input); break;
+                case 7: removeTask(input); break;
+                case 8: renameTask(input); break;
+                case 9: if (currentList != null) currentList.display(); break;
+                case 10: quit = true; break;
+                default: System.out.println("Invalid entry try again");
             }
         }
     }
 
-    private void createList() {
-        System.out.print("Enter topic: ");
-        String topic = scanner.nextLine();
-        for (ToDoList l : lists) {
-            if (l.getTopic().equalsIgnoreCase(topic)) {
-                System.out.println("List already exists!");
+    private static void addTopic() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Please enter topic name");
+        String name = sc.nextLine();
+        for (ToDoList t : topicTodoLIst) {
+            if (t.topic.equals(name)) {
+                System.out.println("Topic already exists. Try again");
                 return;
             }
         }
-        lists.add(new ToDoList(topic));
-        System.out.println("List created.");
+        topicTodoLIst.add(new ToDoList(name));
+        System.out.println("Topic added successfully");
     }
 
-    private void addTaskToList() {
-        ToDoList list = chooseList();
-        if (list == null) return;
-
-        System.out.print("Enter task name: ");
-        String name = scanner.nextLine();
-        Task task = new Task(name);
-
-        System.out.print("Add deadline? (y/n): ");
-        if (scanner.nextLine().equalsIgnoreCase("y")) {
-            task.setDeadline(new Date()); // for simplicity, set current date
+    private static void selectTopic(Scanner sc) {
+        System.out.println("Enter topic name:");
+        String name = sc.nextLine();
+        for (ToDoList t : topicTodoLIst) {
+            if (t.topic.equalsIgnoreCase(name)) {
+                currentList = t;
+                System.out.println("Topic selected.");
+                return;
+            }
         }
+        System.out.println("Topic not found.");
+    }
 
-        System.out.print("Assign employee? (y/n): ");
-        if (scanner.nextLine().equalsIgnoreCase("y")) {
-            System.out.print("Enter employee name: ");
-            task.setEmployee(scanner.nextLine());
-        }
-
-        if (list.addTask(task)) {
-            System.out.println("Task added.");
+    private static void assignTask(Scanner sc) {
+        if (currentList == null) { System.out.println("Select a topic first."); return; }
+        System.out.println("Enter task name:");
+        String tname = sc.nextLine();
+        System.out.println("Enter employee name:");
+        String ename = sc.nextLine();
+        if (currentList.assignTask(tname, ename)) {
+            System.out.println("Task assigned.");
         } else {
-            System.out.println("Task name already exists in this list!");
+            System.out.println("Task not found.");
         }
     }
 
-    private void editTask() {
-        ToDoList list = chooseList();
-        if (list == null) return;
-
-        System.out.print("Enter task name to edit: ");
-        Task task = list.findTask(scanner.nextLine());
-        if (task == null) {
-            System.out.println("Task not found!");
-            return;
+    private static void assignDeadline(Scanner sc) {
+        if (currentList == null) { System.out.println("Select a topic first."); return; }
+        System.out.println("Enter task name:");
+        String tname = sc.nextLine();
+        System.out.println("Enter deadline (dd/MM/yyyy):");
+        try {
+            Date d = new SimpleDateFormat("dd/MM/yyyy").parse(sc.nextLine());
+            if (currentList.assignDeadLine(tname, d)) {
+                System.out.println("Deadline assigned.");
+            } else {
+                System.out.println("Task not found.");
+            }
+        } catch (ParseException e) {
+            System.out.println("Invalid date format.");
         }
-
-        System.out.print("New name (leave blank to keep): ");
-        String newName = scanner.nextLine();
-        if (!newName.isEmpty()) task.setName(newName);
-
-        System.out.print("Change deadline? (y/n): ");
-        if (scanner.nextLine().equalsIgnoreCase("y")) {
-            task.setDeadline(new Date());
-        }
-
-        System.out.print("Change employee? (y/n): ");
-        if (scanner.nextLine().equalsIgnoreCase("y")) {
-            System.out.print("Enter employee: ");
-            task.setEmployee(scanner.nextLine());
-        }
-        System.out.println("Task updated.");
     }
 
-    private void markTaskDone() {
-        ToDoList list = chooseList();
-        if (list == null) return;
-
-        System.out.print("Enter task name: ");
-        Task task = list.findTask(scanner.nextLine());
-        if (task != null) {
-            task.markDone();
+    private static void markAsDone(Scanner sc) {
+        if (currentList == null) { System.out.println("Select a topic first."); return; }
+        System.out.println("Enter task name:");
+        String tname = sc.nextLine();
+        if (currentList.markAsDone(tname)) {
             System.out.println("Task marked as done.");
         } else {
             System.out.println("Task not found.");
         }
     }
 
-    private void displayTasks() {
-        ToDoList list = chooseList();
-        if (list != null) {
-            for (Task t : list.getTasks()) {
-                System.out.println(t);
-            }
+    private static void removeTask(Scanner sc) {
+        if (currentList == null) { System.out.println("Select a topic first."); return; }
+        System.out.println("Enter task name:");
+        String tname = sc.nextLine();
+        if (currentList.removeTask(tname)) {
+            System.out.println("Task removed.");
+        } else {
+            System.out.println("Task not found.");
         }
     }
 
-    private ToDoList chooseList() {
-        if (lists.isEmpty()) {
-            System.out.println("No lists available!");
-            return null;
-        }
-        System.out.println("Available lists:");
-        for (int i = 0; i < lists.size(); i++) {
-            System.out.println((i + 1) + ". " + lists.get(i).getTopic());
-        }
-        System.out.print("Choose list: ");
-        int index;
-        try {
-            index = Integer.parseInt(scanner.nextLine()) - 1;
-            return (index >= 0 && index < lists.size()) ? lists.get(index) : null;
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid number.");
-            return null;
+    private static void renameTask(Scanner sc) {
+        if (currentList == null) { System.out.println("Select a topic first."); return; }
+        System.out.println("Enter old task name:");
+        String oldName = sc.nextLine();
+        System.out.println("Enter new task name:");
+        String newName = sc.nextLine();
+        if (currentList.renameTask(oldName, newName)) {
+            System.out.println("Task renamed.");
+        } else {
+            System.out.println("Task not found.");
         }
     }
 }
